@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.sgr.maven</groupId>
+        <artifactId>maven-base</artifactId>
+        <version>1.1.1</version>
+    </parent>
+
+    <groupId>io.sgr</groupId>
+    <artifactId>dmp-bug</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <properties>
+        <docker.repo>sgrio/sample_webapp</docker.repo>
+        <docker.tag>${project.version}</docker.tag>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.2.3</version>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>${docker.repo}:${docker.tag}</name>
+                            <build>
+                                <contextDir>${project.basedir}/src/main/docker</contextDir>
+                                <dockerFile>Dockerfile</dockerFile>
+                                <assembly>
+                                    <mode>dir</mode>
+                                    <name>./</name>
+                                    <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+                                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                            xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+                                        <id>billing-app</id>
+                                        <fileSets>
+                                            <fileSet>
+                                                <directory>${project.basedir}/src/main/docker</directory>
+                                                <outputDirectory>./tomcat/</outputDirectory>
+                                                <excludes>
+                                                    <exclude>Dockerfile*</exclude>
+                                                </excludes>
+                                            </fileSet>
+                                        </fileSets>
+                                        <files>
+                                            <file>
+                                                <source>${project.build.directory}/${project.build.finalName}.${project.packaging}</source>
+                                                <outputDirectory>./tomcat/webapps/</outputDirectory>
+                                                <destName>apps.war</destName>
+                                            </file>
+                                        </files>
+                                    </inline>
+                                </assembly>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.31.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>
